@@ -1,13 +1,31 @@
 from xml.etree import ElementTree as etree
+import argparse
 
+# Cell size
 size = 100
+# Amount to offset the number by
 number_offset = (11, 33)
+# Amount to offset the text in the box by
 text_offset = (30, 70)
 
+# Giant style string with the CSS for the SVG. problem? no problem.
+stylestring = """
+    <defs>
+    <style type="text/css">
+    <![CDATA[
+        .stroke {stroke:black;stroke-width:2.22009;stroke-linecap:square}
+        .transp {fill:none}
+        .black {fill:black}
+        .white {fill:white}
+        .fnt-times {font-weight:normal;font-size:36;font-family:'Times New Roman'}
+        .fnt-museo {font-weight:normal;font-size:64;font-family:'Museo'}
+    ]]>
+    </style>
+    </defs>"""
 def translate(coords, offset):
     return map(sum,zip(coords,offset))
 
-def make_cell(row, col, color, text=None, number=None):
+def make_cell(col, row, color, text=None, number=None):
     cell = etree.Element("g")
     border = etree.Element("polyline")
     fill = etree.Element("polygon")
@@ -42,7 +60,10 @@ def vertices(row, col):
     vertices = map (lambda (x,y): ((row + x) * size, (col + y) * size), order)
     return ' '.join(["%s,%s" % vertex for vertex in vertices])
 
-def is_number(lines, i, j):
+def is_start_of_word(lines, i, j):
+    """
+    Checks if there is a word starting at (i,j)
+    """
     if lines[i][j] == '*':
         return False
     if i == 0 or j == 0:
@@ -52,40 +73,41 @@ def is_number(lines, i, j):
     if lines[i][j-1] == '*' and lines[i][j+1] != '*':
         return True
     return False
-if __name__ == '__main__':
-    etree.register_namespace("","http://www.w3.org/2000/svg")
+
+def create_svg(lines):
+    """Takes a list of lines from a file with newlines stripped and creates a
+    SVG
+    """
     root = etree.XML('<svg width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg"></svg>')
-    defs = """
-    <defs>
-    <style type="text/css">
-    <![CDATA[
-        .stroke {stroke:black;stroke-width:2.22009;stroke-linecap:square}
-        .transp {fill:none}
-        .black {fill:black}
-        .white {fill:white}
-        .fnt-times {font-weight:normal;font-size:36;font-family:'Times New Roman'}
-        .fnt-museo {font-weight:normal;font-size:64;font-family:'Museo'}
-    ]]>
-    </style>
-    </defs>"""
-    root.append(etree.XML(defs))
-    root.append(etree.Element("path"))
-    with open('input.txt') as f:
-        number = 0
-        lines = [line.strip("\n") for line in f.readlines()]
-        for i in range(len(lines)):
-            line = lines[i]
-            for j in range(len(line)):
-                char = line[j]
-                if char == '*':
-                    root.append(make_cell(j, i, 'black'))
+    root.append(etree.XML(stylestring))
+    # number is the current word number, for numbering the words in the
+    # crossword
+    number = 0
+    for i in range(len(lines)):
+        line = lines[i]
+        for j in range(len(line)):
+            char = line[j]
+            if char == '*':
+                # Add a blank black cell
+                root.append(make_cell(i, j, 'black'))
+            else:
+                if is_start_of_word(lines, i, j):
+                    number += 1
+                    current_number = number
                 else:
-                    if is_number(lines, i, j):
-                        number += 1
-                        current_number = number
-                    else:
-                        current_number = None
-                    root.append(make_cell(j, i, 'white', text=char, number=current_number))
-            i += 1
-    print etree.tostring(root, encoding='iso-8859-1')
+                    current_number = None
+                # Add a white cell, possibly with text
+                root.append(make_cell(i, j, 'white', text=char, number=current_number))
+    return root
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(prog='make_crossword')
+    parser.add_argument('crossword_file', type=str)
+    args = parser.parse_args()
+    etree.register_namespace("","http://www.w3.org/2000/svg")
+    with open(args.crossword_file, 'r') as f:
+        lines = [line.strip("\n") for line in f.readlines()]
+    svg = create_svg(lines)
+    print etree.tostring(svg, encoding='iso-8859-1')
 
