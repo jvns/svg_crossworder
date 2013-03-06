@@ -15,7 +15,8 @@ where input.txt looks like this:
     *t*e
 
 This will generate a filled-in crossword. It does *not* generate
-crossword layouts. There is a sample input file included.
+crossword layouts. There is a sample input file included. The output opens and
+looks okay to me in Inkscape. No more promises.
 
 If you want to change the fonts for the numbers or the letters, there
 is a stylesheet inside the .py file. You can edit it.
