@@ -17,8 +17,8 @@ stylestring = """
         .transp {fill:none}
         .black {fill:black}
         .white {fill:white}
-        .fnt-times {font-weight:normal;font-size:36;font-family:'Times New Roman'}
-        .fnt-museo {font-weight:normal;font-size:64;font-family:'Museo'}
+        .fnt-numbers {font-weight:normal;font-size:36;font-family:'Times New Roman'}
+        .fnt-letters {font-weight:normal;font-size:64;font-family:'Courier New'}
     ]]>
     </style>
     </defs>"""
@@ -42,7 +42,7 @@ def make_cell(col, row, color, text=None, number=None):
         coords = translate((row * size, col * size), text_offset)
         textelt.set("x", str(coords[0]))
         textelt.set("y", str(coords[1]))
-        textelt.set("class", "fnt-museo black")
+        textelt.set("class", "fnt-letters black")
         textelt.text = str(text)
         cell.append(textelt)
     if number is not None:
@@ -50,7 +50,7 @@ def make_cell(col, row, color, text=None, number=None):
         coords = translate((row * size, col * size), number_offset)
         textelt.set("x", str(coords[0]))
         textelt.set("y", str(coords[1]))
-        textelt.set("class", "fnt-times black")
+        textelt.set("class", "fnt-numbers black")
         textelt.text = str(number)
         cell.append(textelt)
     return cell
