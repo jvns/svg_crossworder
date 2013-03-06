@@ -66,11 +66,13 @@ def is_start_of_word(lines, i, j):
     """
     if lines[i][j] == '*':
         return False
-    if i == 0 or j == 0:
+    left = '*' if i == 0  else lines[i-1][j]
+    right = '*' if (i == len(lines) - 1) else lines[i+1][j]
+    above = '*' if j == 0  else lines[i][j - 1]
+    below = '*' if j == len(lines[i]) - 1  else lines[i][j+1]
+    if left == '*' and right != '*':
         return True
-    if lines[i-1][j] == '*' and lines[i+1][j] != '*':
-        return True
-    if lines[i][j-1] == '*' and lines[i][j+1] != '*':
+    if above == '*' and below != '*':
         return True
     return False
 
