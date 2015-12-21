@@ -102,14 +102,154 @@ def create_svg(lines):
                 root.append(make_cell(i, j, 'white', text=char, number=current_number))
     return root
 
+def generate(words, geometry, save_to):
+    import sys
+    import random
+    
+    (w,h) = map(int,geometry.split("x"))
+    board = []
+    for i in xrange(0,h):
+        board.append("*" * w)
+
+    # random!
+    iterations = 1000
+    first = True
+    while iterations and words:
+        iterations -= 1
+        random.shuffle(words)
+        word = words[-1]
+
+        #print >>sys.stderr, word
+
+        # potential places with contact
+        places = []
+        for i in xrange(0,h):
+            for j in xrange(0,w):
+                if first:
+                    places.append( (i,j) )
+                elif board[i][j] in word:
+                    for p in xrange(0, len(word)):
+                        if word[p] == board[i][j]:
+                            #print >>sys.stderr, i, j, p, word[p]
+                            if i-p >=0:
+                                places.append( (i-p,j) )
+                            if j-p >=0:
+                                places.append( (i,j-p) )
+
+        if not places:
+            continue
+        
+        pos = random.choice(places)
+        #print >>sys.stderr, pos
+        dirs = []
+        if pos[0] + len(word) < h:
+            dirs.append("V")
+        if pos[1] + len(word) < w:
+            dirs.append("H")
+        random.shuffle(dirs)
+
+        #print >>sys.stderr, dirs
+
+        good = False
+        for dir in dirs:
+            
+            board_copy = []
+            for line in board:
+                board_copy.append(list(line))
+                
+            (x,y) = pos
+            found_error = False
+            has_contact = False
+
+            if dir == "V":
+                for p in xrange(0, len(word)):
+                    if p == 0 and x > 0 and board_copy[x-1][y] != '*':
+                        found_error = True
+                        break
+                    if p == len(word) -1 and x < h-1 and board_copy[x+1][y] != '*':
+                        found_error = True
+                        break
+                    
+                    if not(board_copy[x][y] == '*' or board_copy[x][y] == word[p]):
+                        found_error = True
+                        break
+
+                    contact_here = False
+                    if board_copy[x][y] == word[p]:
+                        has_contact = True
+                        contact_here = True
+                        
+                    if y < w-1 and board_copy[x][y+1] != '*' and not contact_here:
+                        found_error = True
+                        break
+                    if y > 0 and board_copy[x][y-1] != '*' and not contact_here:
+                        found_error = True
+                        break
+                        
+                    board_copy[x][y] = word[p]
+                    x += 1
+
+            if dir == "H":
+                for p in xrange(0, len(word)):
+                    if p == 0 and y > 0 and board_copy[x][y-1] != '*':
+                        found_error = True
+                        break
+                    if p == len(word) -1 and y < w-1 and board_copy[x][y+1] != '*':
+                        found_error = True
+                        break
+                    
+                    if not(board_copy[x][y] == '*' or board_copy[x][y] == word[p]):
+                        found_error = True
+                        break
+                    
+                    contact_here = False
+                    if board_copy[x][y] == word[p]:
+                        has_contact = True
+                        contact_here = True
+                        
+                    if x < h-1 and board_copy[x+1][y] != '*' and not contact_here:
+                        found_error = True
+                        break
+                    if x > 0 and board_copy[x-1][y] != '*' and not contact_here:
+                        found_error = True
+                        break
+                        
+                    board_copy[x][y] = word[p]
+                    y += 1
+
+            #print >>sys.stderr, "\n".join(map(lambda x:"".join(x),board_copy))+"\n"
+
+            if not found_error and (first or has_contact):
+                #print >>sys.stderr, "success!"
+                good = True
+                board = board_copy
+                break
+            
+        if good:
+            del words[-1]
+            first = False
+
+    if words:
+        print >>sys.stderr, "words remaining: ", words
+    
+    if save_to:
+        with open(save_to,"w") as f:
+            f.write("\n".join(map(lambda x:"".join(x),board))+"\n")
+            
+    return board
+            
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='make_crossword')
     parser.add_argument('crossword_file', type=str)
+    parser.add_argument('--generate', type=str, default=None)
+    parser.add_argument('--save_generated', type=str, default=None)
     args = parser.parse_args()
     etree.register_namespace("","http://www.w3.org/2000/svg")
     with open(args.crossword_file, 'r') as f:
         lines = [line.strip("\n") for line in f.readlines()]
+    if args.generate:
+        lines = generate(lines, args.generate, args.save_generated)
     svg = create_svg(lines)
     print etree.tostring(svg, encoding='iso-8859-1')
 
