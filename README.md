@@ -15,10 +15,10 @@ where input.txt looks like this:
     *t*e
 
 
-This will generate a filled-in crossword. Originally tt did *not*
+This will generate a filled-in crossword. Originally it did *not*
 generate crossword layouts, it now has a contributed random generator
-that takes a long time to run and might give you an output. There is a
-sample input file included. The output opens and looks okay to me in
+that takes a long time to run and might give you some output. There is
+a sample input file included. The output opens and looks okay to me in
 Inkscape. No more promises.
 
 If you want to change the fonts for the numbers or the letters, there
@@ -35,4 +35,4 @@ rows. If there are words that couldn't fit, they are printed to
 standard error. You can save the board to a file to finish it by hand
 with the command line argument --save_generate <file name>.
 
-![Sample generated output](http://i.imgur.com/cMR0X2R)
+![Sample generated output](http://i.imgur.com/cMR0X2R.png)
