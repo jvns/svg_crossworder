@@ -15,10 +15,15 @@ where input.txt looks like this:
     *t*e
 
 
-This will generate a filled-in crossword. Originally it did *not*
-generate crossword layouts, it now has a contributed random generator
-that takes a long time to run and might give you some output. There is
-a sample input file included. The output opens and looks okay to me in
+This will generate a filled-in crossword.
+
+If you want to just supply a list of words and have it generate the layout for you, you can also do that! For example:
+
+```
+python make_crossword.py --generate 20x20 sample_generate.txt > out.svg
+```
+
+The output opens and looks okay to me in
 Inkscape. No more promises.
 
 If you want to change the fonts for the numbers or the letters, there
